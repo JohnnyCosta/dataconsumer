@@ -1,7 +1,7 @@
 package data
 
 /**
-  * Created by joao on 03/01/17.
+  * Simple line values holder
   */
 class Line(val id: String, val name: String, val time: String)
 
