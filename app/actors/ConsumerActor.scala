@@ -3,23 +3,30 @@ package actors
 import java.util.Properties
 import javax.inject.{Inject, Singleton}
 
-import akka.actor.Actor
+import actors.ProcessorActor.ProcessMessage
+import akka.actor.{Actor, ActorRef}
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import play.api.Logger
 import play.api.inject.ApplicationLifecycle
+import play.api.libs.concurrent.InjectedActorSupport
 
 import scala.collection.JavaConverters._
 import scala.concurrent.Future
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
+
+import scala.concurrent.duration._
+import akka.pattern.ask
 
 /**
   * Created by joao on 02/01/17.
   */
 @Singleton
-class ConsumerActor @Inject()(val configuration: play.api.Configuration, appLifecycle: ApplicationLifecycle) extends Actor {
+class ConsumerActor @Inject()(val configuration: play.api.Configuration,
+                              appLifecycle: ApplicationLifecycle, processorFactory: ProcessorActor.Factory)
+  extends Actor with InjectedActorSupport {
 
   def receive = {
     case "consume" => consume()
-    case "kill" => stopEvent()
   }
 
   val group = "datagroup"
@@ -51,12 +58,21 @@ class ConsumerActor @Inject()(val configuration: play.api.Configuration, appLife
 
       Logger.info(s"offset = $offset, value = $value");
 
+      processValue(value)
+
     })
 
     Logger.info("finished to consume")
   }
 
-  def stopEvent() = {
+  def processValue(value: String): Unit = {
+    val actorName = value map { case '\\' => '_'  case '/' => '_'  case c => c }
+    Logger.info(s"Sending to process '$value' with actor name '$actorName'")
+    val processor: ActorRef = injectedChild(processorFactory(value), actorName)
+    (processor ! ProcessMessage)
+  }
+
+  private def stopEvent() = {
     Logger.info("Stopping scheduler actor")
     consumer.close()
   }
