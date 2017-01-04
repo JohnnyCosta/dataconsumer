@@ -49,14 +49,14 @@ class ConsumerActor @Inject()(val configuration: play.api.Configuration,
   Logger(s"Subscribed to topic '$topic'")
 
   def consume(): Unit = {
-    Logger.info("running consume actor")
+    Logger.info("running consumer actor")
 
     consumer.poll(100).iterator().asScala.foreach(record => {
       val offset = record.offset()
       val key = record.key()
       val value = record.value()
 
-      Logger.info(s"offset = $offset, value = $value");
+      Logger.info(s"offset = '$offset', value = '$value'");
 
       processValue(value)
 
