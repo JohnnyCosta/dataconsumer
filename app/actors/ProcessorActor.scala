@@ -4,11 +4,12 @@ import javax.inject.Inject
 
 import akka.actor.Actor
 import com.google.inject.assistedinject.Assisted
+import dao.LinesDao
 import processor.ProcessorLogic
 
 
 /**
-  * Created by joao on 02/01/17.
+  * Action to process the message
   */
 object ProcessorActor {
 
@@ -20,12 +21,12 @@ object ProcessorActor {
 
 }
 
-class ProcessorActor @Inject()(@Assisted message: String, processor: ProcessorLogic) extends Actor {
+class ProcessorActor @Inject()(@Assisted message: String, processor: ProcessorLogic, lineDao: LinesDao) extends Actor {
 
   import ProcessorActor._
 
   def receive = {
     case ProcessMessage =>
-      sender() ! processor.process(message)
+      sender() ! processor.process(message, lineDao)
   }
 }

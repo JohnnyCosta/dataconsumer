@@ -12,4 +12,5 @@ libraryDependencies += ws
 libraryDependencies += "org.apache.kafka" % "kafka-clients" % "0.10.1.1"
 libraryDependencies += "com.typesafe.play" %% "play-slick" % "2.0.0"
 libraryDependencies += "com.h2database" % "h2" % "1.4.193"
+libraryDependencies += "joda-time" % "joda-time" % "2.9.7"
 

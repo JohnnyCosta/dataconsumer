@@ -4,7 +4,7 @@ import com.google.inject.AbstractModule
 import tasks.InitialTasks
 
 /**
-  * Created by joao on 04/01/17.
+  * Module related to the start process
   */
 class StartModule extends AbstractModule{
   def configure(): Unit = {

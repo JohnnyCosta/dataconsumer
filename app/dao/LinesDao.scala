@@ -10,7 +10,7 @@ import slick.driver.JdbcProfile
 import scala.concurrent.Future
 
 /**
-  * Created by joao on 03/01/17.
+  * Lines DAO for database access
   */
 @Singleton
 class LinesDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider) extends HasDatabaseConfigProvider[JdbcProfile] {

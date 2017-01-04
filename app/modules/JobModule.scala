@@ -6,7 +6,7 @@ import play.api.libs.concurrent.AkkaGuiceSupport
 import schedulers.MainScheduler
 
 /**
-  * Created by joao on 02/01/17.
+  * Configure all akka actors related to the the scheduler
   */
 class JobModule extends AbstractModule with AkkaGuiceSupport {
   def configure() = {

@@ -9,7 +9,7 @@ import slick.dbio.DBIO
 import slick.driver.JdbcProfile
 
 /**
-  * Created by joao on 04/01/17.
+  * Run initial activities related with the data
   */
 @Singleton
 class InitialTasks @Inject()(protected val dbConfigProvider: DatabaseConfigProvider, lineDao: LinesDao) {

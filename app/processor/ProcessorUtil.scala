@@ -5,7 +5,7 @@ import data.Line
 import scala.io.Source
 
 /**
-  * Created by joao on 04/01/17.
+  * Processing util
   */
 object ProcessorUtil {
 

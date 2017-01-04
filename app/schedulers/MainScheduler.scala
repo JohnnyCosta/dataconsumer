@@ -8,7 +8,7 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
 /**
-  * Created by joao on 02/01/17.
+  * Configures scheduler activities
   */
 class MainScheduler @Inject()(val system: ActorSystem, conf: play.api.Configuration,
                               @Named("consumer-actor") val consumerActor: ActorRef)(implicit ec: ExecutionContext) {

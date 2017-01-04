@@ -1,9 +1,11 @@
 package processor
 
-import javax.inject.Inject
+import java.util.concurrent.atomic.AtomicInteger
 
 import dao.LinesDao
 import data.Line
+import org.joda.time.DateTimeZone
+import org.joda.time.format.DateTimeFormat
 import play.api.Logger
 import processor.ProcessorUtil._
 
@@ -11,46 +13,50 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.io.Source
 
 /**
-  * Created by joao on 04/01/17.
+  * Main processor logic
   */
-class ProcessorLogic @Inject()(lineDao: LinesDao) {
+class ProcessorLogic {
 
-  def process(message: String): Unit = {
+  val pattern = DateTimeFormat.forPattern("dd-MM-yyyy HH:mm:ss")
+
+  def fixFine(line: Line): Line = {
+
+    val time = if (!line.time.isEmpty) {
+      val datetime = pattern.parseDateTime(line.time)
+      val localdatetime = datetime.withZone(DateTimeZone.getDefault())
+      datetime.withZone(DateTimeZone.UTC).toString
+    } else line.time
+
+    val name = if (!line.name.isEmpty) line.name.toLowerCase() else line.name
+
+    Line(line.id, name, time)
+  }
+
+  def process(message: String, lineDao: LinesDao): Unit = {
     Logger.info(s"Starting to process '$message'")
     val file = Source.fromFile(message)
+    @volatile var lineCounter = new AtomicInteger(0)
     readFromLines(file).foreach(l => {
+      val lineNum = lineCounter.incrementAndGet()
       if (l.isDefined) {
-        val line = l.get
-        Logger.info(s"Processing id '${line.id}'")
+        val line = fixFine(l.get)
 
-        val dbLineFind = lineDao.findById(line.id)
-
-        dbLineFind onSuccess { case dbLinePos =>
-          if (dbLinePos.isEmpty) {
-            lineDao.insert(line)
-          } else {
-            val dbLine = dbLinePos.get
-            var insert = false
-            val name = if (dbLine.name.isEmpty) {
-              insert = true
-              line.name
-            } else dbLine.name
-            val time = if (dbLine.time.isEmpty) {
-              insert = true
-              line.time
-            } else dbLine.time
-
-            if (insert)
-              lineDao.insert(Line(dbLine.id, name, time))
+        Logger.info(s"inserting line '$lineCounter' : '${line.id},${line.name},${line.time}', to database")
+        lineDao.insert(line).value match {
+          case None => {
+            Logger.info(s"Success to insert id '${line.id}'")
           }
-        }
-
-        dbLineFind onFailure {
-          case f => Logger.error(s"An error has occured: ${f.getMessage}")
+          case insertRes => {
+            val res = insertRes.get
+            if (res.isSuccess) {
+              Logger.info(s"Error to insert id '${}'")
+            } else {
+              Logger.error(s"An error has occured: ${res.failed.get.getMessage}")
+            }
+          }
         }
       }
     })
-
     // Read lines from database
     val dbLines = lineDao.all()
     dbLines onSuccess { case lines =>

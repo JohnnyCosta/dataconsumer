@@ -18,7 +18,7 @@ import scala.concurrent.duration._
 import akka.pattern.ask
 
 /**
-  * Created by joao on 02/01/17.
+  * Consumer action that get a message from kafka
   */
 @Singleton
 class ConsumerActor @Inject()(val configuration: play.api.Configuration,
